@@ -125,7 +125,7 @@ if userchanges.lower() == "y":
         "Please type a list of all authorized ADMINISTRATORS (NOT standard users). Exclude your name => ").split(" ")
     you = input("Please type YOUR username: =>").strip()
 
-    userlist = x = [grp.getgrgid(p[3])[0]
+    userlist = [grp.getgrgid(p[3])[0]
                     for p in pwd.getpwall() if p[2] > 1000 and p[2] != 65534]
 
     for i in list(set(userlist) - set(admins+users)):
