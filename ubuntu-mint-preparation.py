@@ -149,8 +149,14 @@ if userchanges.lower() == "y":
 ufw = input("Would you like to install and enable UFW? =>")
 
 if ufw.lower() == "y":
-    commands += ["sudo apt install ufrw -y", "sudo ufw enable"]
+    commands += ["sudo apt install ufw -y", "sudo ufw enable"]
+
+ufw = input("Would you like to perform updates and package cleanup? =>")
+
+if ufw.lower() == "y":
+    commands += ["sudo apt update", "sudo apt dist-upgrade -y", "sudo apt autoremove -y"]
     
+
 print("Generating shell script. You may be asked for authentication to run the requested operations.")
 
 file = open("/tmp/cyberpatriots_script.sh", "w")
