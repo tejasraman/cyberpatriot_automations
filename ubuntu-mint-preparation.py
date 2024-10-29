@@ -115,35 +115,42 @@ if input("\nWould you like to change password aging policies? => ").lower() == "
     commands.append(f"sed -i 's/LOG_OK_LOGINS.*/LOG_OK_LOGINS       {
                     passpolicies["oklog"].lower()}/' /etc/login.defs"
                     )
-print("Please type EXACT usernames; otherwise, usernames WILL be deleted. DO NOT use delimiters other than spaces.")
-users = input(
-    "Please type a list of all authorized USERS (NOT administrators => ").split(" ")
-admins = input(
-    "Please type a list of all authorized ADMINISTRATORS (NOT standard users). Exclude your name => ").split(" ")
-you = input("Please type YOUR username: =>").strip()
+userchanges = input("Would you like to change user passwords and delete unauthorized users? =>")
 
-userlist = x = [grp.getgrgid(p[3])[0]
-                for p in pwd.getpwall() if p[2] > 1000 and p[2] != 65534]
+if userchanges.lower() == "y":
+    print("Please type EXACT usernames; otherwise, usernames WILL be deleted. DO NOT use delimiters other than spaces.")
+    users = input(
+        "Please type a list of all authorized USERS (NOT administrators => ").split(" ")
+    admins = input(
+        "Please type a list of all authorized ADMINISTRATORS (NOT standard users). Exclude your name => ").split(" ")
+    you = input("Please type YOUR username: =>").strip()
 
-for i in list(set(userlist) - set(admins+users)):
-    commands.append(f"deluser --remove-home {i}")
+    userlist = x = [grp.getgrgid(p[3])[0]
+                    for p in pwd.getpwall() if p[2] > 1000 and p[2] != 65534]
 
-print(f"{len(list(set(userlist) - set(admins+users)))} unauthorized users removed")
+    for i in list(set(userlist) - set(admins+users)):
+        commands.append(f"deluser --remove-home {i}")
 
-print("Changing passwords for ALL users EXCEPT yourself - the password will be saved to Passwordfile in your home directory.")
+    print(f"{len(list(set(userlist) - set(admins+users)))} unauthorized users removed")
 
-user_passwords = dict()
-changeusers = users + admins
+    print("Changing passwords for ALL users EXCEPT yourself - the password will be saved to Passwordfile in your home directory.")
 
-ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-salt = ''.join(random.choice(ALPHABET) for i in range(8))
+    user_passwords = dict()
+    changeusers = users + admins
 
-for i in changeusers:
-    user_passwords[i] = password = random.randint(1000000000000, 9999999999999)
-    new_password = crypt.crypt(user_passwords[i], '$1$'+salt+'$')
-    commands.append(f"usermod -p {new_password} {i}")
+    ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    salt = ''.join(random.choice(ALPHABET) for i in range(8))
 
+    for i in changeusers:
+        user_passwords[i] = password = random.randint(1000000000000, 9999999999999)
+        new_password = crypt.crypt(user_passwords[i], '$1$'+salt+'$')
+        commands.append(f"usermod -p {new_password} {i}")
 
+ufw = input("Would you like to install and enable UFW? =>")
+
+if ufw.lower() == "y":
+    commands += ["sudo apt install ufrw -y", "sudo ufw enable"]
+    
 print("Generating shell script. You may be asked for authentication to run the requested operations.")
 
 file = open("/tmp/cyberpatriots_script.sh", "w")
